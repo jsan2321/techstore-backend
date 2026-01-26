@@ -13,4 +13,6 @@ public interface TokenProviderPort {
     boolean validateToken(String token);
     
     String getUserIdFromToken(String token);
+
+    String getUsernameFromToken(String token);
 }

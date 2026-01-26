@@ -1,6 +1,9 @@
 package com.ecoapi.goodshopping.user.domain.model;
 
+import com.ecoapi.goodshopping.common.domain.valueobjects.Address;
 import com.ecoapi.goodshopping.common.domain.valueobjects.Email;
+import com.ecoapi.goodshopping.common.domain.valueobjects.PhoneNumber;
+import com.ecoapi.goodshopping.common.domain.valueobjects.UserId;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -19,6 +22,8 @@ public class User {
     private String lastName;
     private Email email;
     private String passwordHash;
+    private PhoneNumber phoneNumber;
+    private Address address;
     private boolean active;
     private Set<Role> roles;
     private LocalDateTime createdAt;
@@ -42,7 +47,8 @@ public class User {
     
     // Private constructor for reconstitution - use factory methods
     private User(UserId id, String firstName, String lastName, Email email, 
-                 String passwordHash, boolean active, Set<Role> roles, 
+                 String passwordHash, PhoneNumber phoneNumber, Address address,
+                 boolean active, Set<Role> roles, 
                  LocalDateTime createdAt, LocalDateTime updatedAt) {
         validateFirstName(firstName);
         validateLastName(lastName);
@@ -53,6 +59,8 @@ public class User {
         this.lastName = lastName.trim();
         this.email = email;
         this.passwordHash = passwordHash;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
         this.active = active;
         this.roles = roles != null ? new HashSet<>(roles) : new HashSet<>();
         this.createdAt = createdAt;
@@ -74,19 +82,22 @@ public class User {
      * Used by infrastructure layer to rebuild domain object from database
      */
     public static User reconstitute(UserId id, String firstName, String lastName, Email email,
-                                    String passwordHash, boolean active, Set<Role> roles,
+                                    String passwordHash, PhoneNumber phoneNumber, Address address,
+                                    boolean active, Set<Role> roles,
                                     LocalDateTime createdAt, LocalDateTime updatedAt) {
-        return new User(id, firstName, lastName, email, passwordHash, active, roles, createdAt, updatedAt);
+        return new User(id, firstName, lastName, email, passwordHash, phoneNumber, address, active, roles, createdAt, updatedAt);
     }
     
     // Business logic methods
     
-    public void updateProfile(String firstName, String lastName) {
+    public void updateProfile(String firstName, String lastName, PhoneNumber phoneNumber, Address address) {
         validateFirstName(firstName);
         validateLastName(lastName);
         
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
+        this.phoneNumber = phoneNumber;
+        this.address = address;
         this.updatedAt = LocalDateTime.now();
     }
     
@@ -190,6 +201,14 @@ public class User {
     
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+    
+    public PhoneNumber getPhoneNumber() {
+        return phoneNumber;
+    }
+    
+    public Address getAddress() {
+        return address;
     }
     
     @Override

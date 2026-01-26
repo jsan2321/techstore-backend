@@ -39,14 +39,15 @@ public class UserDetailsServiceAdapter implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
         
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail().value())
-                .password(user.getPasswordHash())
-                .authorities(authorities)
-                .accountExpired(false)
-                .accountLocked(false)
-                .credentialsExpired(false)
-                .disabled(!user.isActive())
-                .build();
+        return new SecurityUser(
+                user.getId().value(),
+                user.getEmail().value(),
+                user.getPasswordHash(),
+                user.isActive(),
+                true,  // accountNonExpired
+                true,  // credentialsNonExpired
+                true,  // accountNonLocked
+                authorities
+        );
     }
 }

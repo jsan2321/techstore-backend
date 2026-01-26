@@ -1,4 +1,4 @@
-package com.ecoapi.goodshopping.user.domain.model;
+package com.ecoapi.goodshopping.user.domain.model.vo;
 
 /**
  * Value Object representing a User's unique identifier

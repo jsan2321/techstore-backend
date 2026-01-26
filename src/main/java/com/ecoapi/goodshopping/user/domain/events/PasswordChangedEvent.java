@@ -1,7 +1,7 @@
 package com.ecoapi.goodshopping.user.domain.events;
 
 import com.ecoapi.goodshopping.common.domain.events.DomainEvent;
-import com.ecoapi.goodshopping.user.domain.model.UserId;
+import com.ecoapi.goodshopping.common.domain.valueobjects.UserId;
 
 import java.time.LocalDateTime;
 

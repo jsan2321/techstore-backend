@@ -1,6 +1,9 @@
 package com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,6 +14,8 @@ import java.util.Set;
  * Contains JPA annotations and database mapping concerns
  */
 @Entity
+@Getter
+@Setter
 @Table(name = "users")
 public class UserEntity {
     
@@ -24,7 +29,7 @@ public class UserEntity {
     @Column(nullable = false, length = 50)
     private String lastName;
     
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
     
     @Column(nullable = false)
@@ -32,6 +37,12 @@ public class UserEntity {
     
     @Column(nullable = false)
     private boolean active = true;
+
+    @Embedded
+    private AddressEmbeddable address;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
     
     @ManyToMany(fetch = FetchType.EAGER, cascade = {
             CascadeType.DETACH,
@@ -45,6 +56,9 @@ public class UserEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<RoleEntity> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RefreshTokenEntity> refreshTokens = new HashSet<>();
     
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -63,77 +77,5 @@ public class UserEntity {
         updatedAt = LocalDateTime.now();
     }
     
-    // Getters and Setters
-    
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getFirstName() {
-        return firstName;
-    }
-    
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-    
-    public String getLastName() {
-        return lastName;
-    }
-    
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-    
-    public String getEmail() {
-        return email;
-    }
-    
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-    
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-    
-    public boolean isActive() {
-        return active;
-    }
-    
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-    
-    public Set<RoleEntity> getRoles() {
-        return roles;
-    }
-    
-    public void setRoles(Set<RoleEntity> roles) {
-        this.roles = roles;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+
 }

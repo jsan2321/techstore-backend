@@ -1,11 +1,15 @@
 package com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * JPA Entity for Role persistence
  */
 @Entity
+@Getter
+@Setter
 @Table(name = "roles")
 public class RoleEntity {
     
@@ -24,21 +28,4 @@ public class RoleEntity {
         this.name = name;
     }
     
-    // Getters and Setters
-    
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
 }

@@ -3,12 +3,16 @@ package com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.r
 import com.ecoapi.goodshopping.common.domain.valueobjects.Email;
 import com.ecoapi.goodshopping.user.application.port.out.UserRepositoryPort;
 import com.ecoapi.goodshopping.user.domain.model.User;
-import com.ecoapi.goodshopping.user.domain.model.UserId;
+import com.ecoapi.goodshopping.common.domain.valueobjects.UserId;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.entity.UserEntity;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.mapper.UserPersistenceMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Adapter that implements the UserRepositoryPort
@@ -61,5 +65,15 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     public void delete(User user) {
         UserEntity entity = mapper.toEntity(user);
         jpaRepository.delete(entity);
+    }
+    
+    @Override
+    public List<User> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return jpaRepository.findAll(pageable)
+                .getContent()
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 }

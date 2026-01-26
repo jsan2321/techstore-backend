@@ -1,10 +1,13 @@
 package com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.mapper;
 
+import com.ecoapi.goodshopping.common.domain.valueobjects.Address;
 import com.ecoapi.goodshopping.common.domain.valueobjects.Email;
+import com.ecoapi.goodshopping.common.domain.valueobjects.PhoneNumber;
 import com.ecoapi.goodshopping.user.domain.model.Role;
-import com.ecoapi.goodshopping.user.domain.model.RoleId;
 import com.ecoapi.goodshopping.user.domain.model.User;
-import com.ecoapi.goodshopping.user.domain.model.UserId;
+import com.ecoapi.goodshopping.common.domain.valueobjects.RoleId;
+import com.ecoapi.goodshopping.common.domain.valueobjects.UserId;
+import com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.entity.AddressEmbeddable;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.entity.RoleEntity;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.entity.UserEntity;
 
@@ -36,6 +39,21 @@ public class UserPersistenceMapper {
         entity.setCreatedAt(user.getCreatedAt());
         entity.setUpdatedAt(user.getUpdatedAt());
         
+        // Map phoneNumber
+        if (user.getPhoneNumber() != null) {
+            entity.setPhoneNumber(user.getPhoneNumber().value());
+        }
+        
+        // Map address
+        if (user.getAddress() != null) {
+            AddressEmbeddable addressEmbeddable = new AddressEmbeddable(
+                    user.getAddress().street(),
+                    user.getAddress().city(),
+                    user.getAddress().zipCode()
+            );
+            entity.setAddress(addressEmbeddable);
+        }
+        
         // Map roles
         Set<RoleEntity> roleEntities = user.getRoles().stream()
                 .map(this::toRoleEntity)
@@ -57,12 +75,22 @@ public class UserPersistenceMapper {
         
         UserId userId = entity.getId() != null ? UserId.of(entity.getId()) : null;
         
+        PhoneNumber phoneNumber = entity.getPhoneNumber() != null ? 
+                new PhoneNumber(entity.getPhoneNumber()) : null;
+        
+        Address address = entity.getAddress() != null ? 
+                new Address(entity.getAddress().getStreet(), 
+                           entity.getAddress().getCity(), 
+                           entity.getAddress().getZipCode()) : null;
+        
         return User.reconstitute(
                 userId,
                 entity.getFirstName(),
                 entity.getLastName(),
                 email,
                 entity.getPasswordHash(),
+                phoneNumber,
+                address,
                 entity.isActive(),
                 roles,
                 entity.getCreatedAt(),

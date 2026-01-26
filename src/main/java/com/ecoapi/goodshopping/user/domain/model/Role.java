@@ -2,6 +2,8 @@ package com.ecoapi.goodshopping.user.domain.model;
 
 import java.util.Objects;
 
+import com.ecoapi.goodshopping.common.domain.valueobjects.RoleId;
+
 /**
  * Role Entity - Pure domain model
  * No JPA annotations - this is the business model

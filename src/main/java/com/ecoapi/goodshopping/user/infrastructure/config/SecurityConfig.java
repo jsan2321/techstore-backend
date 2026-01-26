@@ -42,7 +42,9 @@ public class SecurityConfig {
     // List of URL patterns that require authentication
     private static final List<String> SECURED_URLS = List.of(
             "/api/v1/carts/**", 
-            "/api/v1/cartItems/**"
+            "/api/v1/cartItems/**",
+            "/api/v1/users/me",
+            "/api/v1/auth/logout"
     );
     
     @Bean

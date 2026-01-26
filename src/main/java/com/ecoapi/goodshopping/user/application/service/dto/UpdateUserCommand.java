@@ -1,12 +1,17 @@
 package com.ecoapi.goodshopping.user.application.service.dto;
 
+import com.ecoapi.goodshopping.common.domain.valueobjects.Address;
+import com.ecoapi.goodshopping.common.domain.valueobjects.PhoneNumber;
+
 /**
  * Command DTO for updating user profile
  */
 public record UpdateUserCommand(
     Long userId,
     String firstName,
-    String lastName
+    String lastName,
+    PhoneNumber phoneNumber,
+    Address address
 ) {
     public UpdateUserCommand {
         if (userId == null || userId <= 0) {
