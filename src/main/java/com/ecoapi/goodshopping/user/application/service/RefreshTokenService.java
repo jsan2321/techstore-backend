@@ -1,8 +1,8 @@
 package com.ecoapi.goodshopping.user.application.service;
 
+import com.ecoapi.goodshopping.common.application.port.out.TokenProviderPort;
 import com.ecoapi.goodshopping.user.application.port.in.RefreshTokenUseCase;
 import com.ecoapi.goodshopping.user.application.port.out.RefreshTokenRepositoryPort;
-import com.ecoapi.goodshopping.user.application.port.out.TokenProviderPort;
 import com.ecoapi.goodshopping.user.application.port.out.UserRepositoryPort;
 import com.ecoapi.goodshopping.user.application.service.dto.RefreshTokenCommand;
 import com.ecoapi.goodshopping.user.domain.exception.InvalidRefreshTokenException;
@@ -10,6 +10,9 @@ import com.ecoapi.goodshopping.user.domain.exception.UserNotFoundException;
 import com.ecoapi.goodshopping.user.domain.model.AuthenticationResult;
 import com.ecoapi.goodshopping.user.domain.model.RefreshToken;
 import com.ecoapi.goodshopping.user.domain.model.User;
+
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +60,13 @@ public class RefreshTokenService implements RefreshTokenUseCase {
         }
         
         // 3. Generate new access token
-        String newAccessToken = tokenProvider.generateToken(user);
+        String newAccessToken = tokenProvider.generateToken(
+            user.getId().value().toString(),
+            user.getEmail().value(),
+            user.getRoles().stream()
+                .map(role -> role.getName().name())
+                .collect(Collectors.toList())
+        );
         
         logger.info("Successfully refreshed access token for user: {}", user.getId().value());
         

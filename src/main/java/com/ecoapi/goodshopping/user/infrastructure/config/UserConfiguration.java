@@ -1,13 +1,13 @@
 package com.ecoapi.goodshopping.user.infrastructure.config;
 
+import com.ecoapi.goodshopping.common.application.port.out.TokenProviderPort;
 import com.ecoapi.goodshopping.user.application.port.in.*;
 import com.ecoapi.goodshopping.user.application.port.out.*;
 import com.ecoapi.goodshopping.user.application.service.*;
-import com.ecoapi.goodshopping.user.domain.service.TokenBlacklistService;
 import com.ecoapi.goodshopping.user.domain.service.UserDomainService;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.mapper.UserPersistenceMapper;
-import com.ecoapi.goodshopping.user.infrastructure.security.jwt.JwtTokenProviderAdapter;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -42,6 +42,9 @@ public class UserConfiguration {
     public UserDomainService userDomainService() {
         return new UserDomainService();
     }
+
+    @Value("${auth.refreshToken.expirationInDays:7}") // Inject here!
+    private int refreshTokenExpiryDays;
     
     /**
      * Register User Use Case
@@ -74,7 +77,8 @@ public class UserConfiguration {
         return new LoginUserService(
                 authenticationPort,
                 tokenProviderPort,
-                refreshTokenRepositoryPort
+                refreshTokenRepositoryPort,
+                refreshTokenExpiryDays
         );
     }
     
@@ -129,16 +133,8 @@ public class UserConfiguration {
      * Handles user logout and token revocation
      */
     @Bean
-    public LogoutUseCase logoutUseCase(
-            RefreshTokenRepositoryPort refreshTokenRepositoryPort
-            //TokenBlacklistService tokenBlacklistService,
-            //JwtTokenProviderAdapter jwtTokenProvider
-        ) {
-        return new LogoutService(
-                refreshTokenRepositoryPort
-                //tokenBlacklistService,
-                //jwtTokenProvider
-        );
+    public LogoutUseCase logoutUseCase(RefreshTokenRepositoryPort refreshTokenRepositoryPort) {
+        return new LogoutService(refreshTokenRepositoryPort);
     }
     
     /**

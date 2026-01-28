@@ -1,5 +1,7 @@
 package com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.entity;
 
+import com.ecoapi.goodshopping.user.domain.model.RoleName;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,14 +19,15 @@ public class RoleEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true, length = 50)
-    private String name;
+    private RoleName name;
     
     // Default constructor for JPA
     public RoleEntity() {
     }
     
-    public RoleEntity(String name) {
+    public RoleEntity(RoleName name) {
         this.name = name;
     }
     

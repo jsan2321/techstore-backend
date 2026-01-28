@@ -1,4 +1,4 @@
-package com.ecoapi.goodshopping.user.infrastructure.security;
+package com.ecoapi.goodshopping.user.infrastructure.adapter.output.security;
 
 import com.ecoapi.goodshopping.user.application.port.out.PasswordEncoderPort;
 import org.springframework.security.crypto.password.PasswordEncoder;

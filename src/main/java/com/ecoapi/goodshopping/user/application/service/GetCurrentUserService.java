@@ -1,11 +1,11 @@
 package com.ecoapi.goodshopping.user.application.service;
 
 import com.ecoapi.goodshopping.common.domain.valueobjects.UserId;
+import com.ecoapi.goodshopping.common.infrastructure.security.util.SecurityContextUtil;
 import com.ecoapi.goodshopping.user.application.port.in.GetCurrentUserUseCase;
 import com.ecoapi.goodshopping.user.application.port.out.UserRepositoryPort;
 import com.ecoapi.goodshopping.user.domain.exception.UserNotFoundException;
 import com.ecoapi.goodshopping.user.domain.model.User;
-import com.ecoapi.goodshopping.user.infrastructure.security.util.SecurityContextUtil;
 
 /**
  * Service implementation for retrieving the current authenticated user

@@ -24,7 +24,7 @@ public record UserResponse(
                 user.getEmail().value(),
                 user.isActive(),
                 user.getRoles().stream()
-                        .map(role -> role.getName())
+                        .map(role -> role.getName().name())
                         .collect(Collectors.toSet())
         );
     }

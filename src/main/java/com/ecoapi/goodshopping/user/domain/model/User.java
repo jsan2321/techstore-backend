@@ -132,8 +132,14 @@ public class User {
     
     public boolean hasRole(String roleName) {
         return roles.stream()
-                .anyMatch(role -> role.getName().equals(roleName.toUpperCase()));
+                .anyMatch(role -> role.getName().name().equals(roleName.toUpperCase()));
     }
+
+    public boolean hasRole(RoleName roleName) {
+        return roles.stream()
+                .anyMatch(role -> role.getName() == roleName);
+    }
+    
     
     public String getFullName() {
         return firstName + " " + lastName;

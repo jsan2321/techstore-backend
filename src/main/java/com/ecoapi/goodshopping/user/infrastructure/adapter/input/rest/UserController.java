@@ -12,9 +12,9 @@ import com.ecoapi.goodshopping.user.application.service.dto.DeleteUserCommand;
 import com.ecoapi.goodshopping.user.application.service.dto.UpdateUserCommand;
 import com.ecoapi.goodshopping.user.domain.model.User;
 import com.ecoapi.goodshopping.common.domain.valueobjects.UserId;
+import com.ecoapi.goodshopping.common.infrastructure.security.util.SecurityContextUtil;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.input.rest.request.UpdateUserRequest;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.input.rest.response.UserResponse;
-import com.ecoapi.goodshopping.user.infrastructure.security.util.SecurityContextUtil;
 
 import jakarta.validation.Valid;
 
@@ -65,7 +65,7 @@ public class UserController {
 
     // The specific endpoint for Admins (or the user themselves)
     @GetMapping("/{userId}")
-    @PreAuthorize("hasAuthority('ADMIN') or #userId == principal.userId")
+    @PreAuthorize("hasRole('ADMIN') or #userId == principal.userId")
     public ResponseEntity<UserResponse> getUserProfile(@PathVariable Long userId) {
         User user = getUserProfileUseCase.execute(UserId.of(userId));
         return ResponseEntity.ok(UserResponse.from(user));
@@ -77,54 +77,23 @@ public class UserController {
      */
    @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserResponse> updateCurrentUser(
-            @Valid @RequestBody UpdateUserRequest request) {
+    public ResponseEntity<UserResponse> updateCurrentUser(@Valid @RequestBody UpdateUserRequest request) {
         
         Long currentUserId = SecurityContextUtil.getCurrentUserId()
                 .orElseThrow(() -> new SecurityException("No authenticated user"));
         
-        PhoneNumber phoneNumber = request.phoneNumber() != null ? new PhoneNumber(request.phoneNumber()) : null;
-        Address address = request.address() != null ? 
-                new Address(request.address().street(), request.address().city(), request.address().zipCode()) : null;
-        
-        UpdateUserCommand command = new UpdateUserCommand(
-                currentUserId,
-                request.firstName(),
-                request.lastName(),
-                phoneNumber,
-                address
-        );
-        
-        User user = updateUserUseCase.execute(command);
-        return ResponseEntity.ok(UserResponse.from(user));
+        return processUpdate(currentUserId, request);
     }
     @PutMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN') or #userId == principal.userId")
-    public ResponseEntity<UserResponse> updateUser(
-            @PathVariable Long userId,
-            @Valid @RequestBody UpdateUserRequest request) {
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long userId, @Valid @RequestBody UpdateUserRequest request) {
         
-        PhoneNumber phoneNumber = request.phoneNumber() != null ? new PhoneNumber(request.phoneNumber()) : null;
-        Address address = request.address() != null ? 
-                new Address(request.address().street(), request.address().city(), request.address().zipCode()) : null;
-        
-        UpdateUserCommand command = new UpdateUserCommand(
-                userId,
-                request.firstName(),
-                request.lastName(),
-                phoneNumber,
-                address
-        );
-        
-        User user = updateUserUseCase.execute(command);
-        return ResponseEntity.ok(UserResponse.from(user));
+        return processUpdate(userId, request);
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<List<UserResponse>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         
         GetAllUsersQuery query = new GetAllUsersQuery(page, size);
         List<User> users = getAllUsersUseCase.execute(query);
@@ -142,5 +111,22 @@ public class UserController {
         deleteUserUseCase.execute(command);
         return ResponseEntity.noContent().build();
     }
-    
+
+    // Helper method to keep code DRY (Don't Repeat Yourself)
+    private ResponseEntity<UserResponse> processUpdate(Long userId, UpdateUserRequest request) {
+        PhoneNumber phoneNumber = request.phoneNumber() != null ? new PhoneNumber(request.phoneNumber()) : null;
+        Address address = request.address() != null ? 
+                new Address(request.address().street(), request.address().city(), request.address().zipCode()) : null;
+
+        UpdateUserCommand command = new UpdateUserCommand(
+                userId,
+                request.firstName(),
+                request.lastName(),
+                phoneNumber,
+                address
+        );
+
+        User user = updateUserUseCase.execute(command);
+        return ResponseEntity.ok(UserResponse.from(user));
+    }
 }

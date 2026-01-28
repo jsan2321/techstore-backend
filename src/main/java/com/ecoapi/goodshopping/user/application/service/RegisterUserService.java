@@ -10,6 +10,7 @@ import com.ecoapi.goodshopping.user.application.service.dto.RegisterCommand;
 import com.ecoapi.goodshopping.user.domain.events.UserRegisteredEvent;
 import com.ecoapi.goodshopping.user.domain.exception.EmailAlreadyExistsException;
 import com.ecoapi.goodshopping.user.domain.model.Role;
+import com.ecoapi.goodshopping.user.domain.model.RoleName;
 import com.ecoapi.goodshopping.user.domain.model.User;
 
 /**
@@ -54,10 +55,16 @@ public class RegisterUserService implements RegisterUserUseCase {
             email,
             passwordHash
         );
-        
+
         // Assign default role (USER)
-        Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseGet(() -> roleRepository.save(new Role("ROLE_USER")));
+        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+        .orElseGet(() -> {
+            // If the default role doesn't exist, create it
+            Role newRole = new Role(RoleName.ROLE_USER);
+            return roleRepository.save(newRole);
+        });
+            //.orElseThrow(() -> new IllegalStateException("System Error: Default role 'ROLE_USER' not initialized in database."));
+
         user.addRole(userRole);
         
         // Save to database

@@ -11,38 +11,36 @@ import com.ecoapi.goodshopping.common.domain.valueobjects.RoleId;
 public class Role {
     
     private RoleId id;
-    private String name;
+    private RoleName name;
     
     // Constructor for creating a new role (without ID)
-    public Role(String name) {
+    public Role(RoleName name) {
         validateName(name);
-        this.name = name.toUpperCase().trim();
+        this.name = name;
     }
     
     // Constructor for reconstituting from persistence
-    public Role(RoleId id, String name) {
+    public Role(RoleId id, RoleName name) {
         validateName(name);
         this.id = id;
-        this.name = name.toUpperCase().trim();
+        this.name = name;
     }
     
-    private void validateName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Role name cannot be null or empty");
-        }
+    private void validateName(RoleName name) {
+        if (name == null) throw new IllegalArgumentException("Role name cannot be null or empty");
     }
     
     public RoleId getId() {
         return id;
     }
     
-    public String getName() {
+    public RoleName getName() {
         return name;
     }
     
-    public void changeName(String newName) {
+    public void changeName(RoleName newName) {
         validateName(newName);
-        this.name = newName.toUpperCase().trim();
+        this.name = newName;
     }
     
     @Override
@@ -62,7 +60,7 @@ public class Role {
     public String toString() {
         return "Role{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
+                ", name=" + name +
                 '}';
     }
 }

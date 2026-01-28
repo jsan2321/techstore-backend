@@ -1,7 +1,5 @@
 package com.ecoapi.goodshopping.user.infrastructure.config;
 
-import com.ecoapi.goodshopping.user.infrastructure.security.jwt.AuthTokenFilter;
-import com.ecoapi.goodshopping.user.infrastructure.security.jwt.JwtAuthEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +19,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.ecoapi.goodshopping.common.infrastructure.security.jwt.AuthTokenFilter;
+import com.ecoapi.goodshopping.common.infrastructure.security.jwt.JwtAuthEntryPoint;
 
 import java.util.Arrays;
 import java.util.List;

@@ -1,12 +1,9 @@
 package com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence;
 
 import com.ecoapi.goodshopping.user.application.port.out.RefreshTokenRepositoryPort;
-import com.ecoapi.goodshopping.user.domain.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +19,6 @@ public class TokenCleanupScheduler {
     //private static final Logger logger = LoggerFactory.getLogger(TokenCleanupScheduler.class);
     
     private final RefreshTokenRepositoryPort refreshTokenRepository;
-    private final TokenBlacklistService tokenBlacklistService;
     
     /**
      * Clean up expired refresh tokens
@@ -40,18 +36,4 @@ public class TokenCleanupScheduler {
         }
     }
     
-    /**
-     * Clean up expired blacklisted access tokens
-     * Runs every 30 minutes
-     */
-    @Scheduled(cron = "0 */30 * * * *")  // Every 30 minutes
-    public void cleanupExpiredBlacklistedTokens() {
-        log.info("Starting scheduled cleanup of expired blacklisted tokens");
-        try {
-            tokenBlacklistService.cleanupExpiredTokens();
-            log.info("Successfully cleaned up expired blacklisted tokens");
-        } catch (Exception e) {
-            log.error("Error cleaning up expired blacklisted tokens", e);
-        }
-    }
 }

@@ -1,14 +1,15 @@
 package com.ecoapi.goodshopping.user.application.service;
 
+import com.ecoapi.goodshopping.common.application.port.out.TokenProviderPort;
 import com.ecoapi.goodshopping.user.application.port.in.LoginUseCase;
 import com.ecoapi.goodshopping.user.application.port.out.AuthenticationPort;
 import com.ecoapi.goodshopping.user.application.port.out.RefreshTokenRepositoryPort;
-import com.ecoapi.goodshopping.user.application.port.out.TokenProviderPort;
 import com.ecoapi.goodshopping.user.application.service.dto.LoginCommand;
 import com.ecoapi.goodshopping.user.domain.model.AuthenticationResult;
 import com.ecoapi.goodshopping.user.domain.model.RefreshToken;
 import com.ecoapi.goodshopping.user.domain.model.User;
-import org.springframework.beans.factory.annotation.Value;
+
+import java.util.stream.Collectors;
 
 /**
  * Application Service for User Login
@@ -25,17 +26,17 @@ public class LoginUserService implements LoginUseCase {
     private final AuthenticationPort authenticationPort;
     private final TokenProviderPort tokenProvider;
     private final RefreshTokenRepositoryPort refreshTokenRepository;
-    
-    @Value("${auth.refreshToken.expirationInDays:7}")
-    private int refreshTokenExpiryDays;
-    
+    private final int refreshTokenExpiryDays;
+        
     public LoginUserService(
             AuthenticationPort authenticationPort,
             TokenProviderPort tokenProvider,
-            RefreshTokenRepositoryPort refreshTokenRepository) {
+            RefreshTokenRepositoryPort refreshTokenRepository,
+            int refreshTokenExpiryDays) {
         this.authenticationPort = authenticationPort;
         this.tokenProvider = tokenProvider;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenExpiryDays = refreshTokenExpiryDays;
     }
     
     @Override
@@ -46,7 +47,13 @@ public class LoginUserService implements LoginUseCase {
         User user = authenticationPort.authenticate(command.email(), command.password());
         
         // Generate JWT access token
-        String accessToken = tokenProvider.generateToken(user);
+        String accessToken = tokenProvider.generateToken(
+                user.getId().value().toString(),
+                user.getEmail().value(),
+                user.getRoles().stream()
+                    .map(role -> role.getName().name())
+                    .collect(Collectors.toList())
+        );
         
         // Delete old refresh tokens for this user (optional - for single device only)
         // refreshTokenRepository.deleteByUserId(user.getId());

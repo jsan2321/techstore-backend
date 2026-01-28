@@ -11,13 +11,14 @@ import com.ecoapi.goodshopping.user.application.service.dto.RegisterCommand;
 import com.ecoapi.goodshopping.user.domain.model.AuthenticationResult;
 import com.ecoapi.goodshopping.user.domain.model.User;
 import com.ecoapi.goodshopping.common.domain.valueobjects.UserId;
+import com.ecoapi.goodshopping.common.infrastructure.security.util.SecurityContextUtil;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.input.rest.request.LoginRequest;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.input.rest.request.LogoutRequest;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.input.rest.request.RefreshTokenRequest;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.input.rest.request.RegisterRequest;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.input.rest.response.AuthResponse;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.input.rest.response.UserResponse;
-import com.ecoapi.goodshopping.user.infrastructure.security.util.SecurityContextUtil;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -75,18 +76,12 @@ public class AuthController {
 
     /**
      * POST /api/v1/auth/logout
-     * Logout the current user by invalidating their refresh token and blacklisting the access token
+     * Logout the current user by invalidating their refresh token
      */
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> logout(@Valid @RequestBody LogoutRequest request, 
-                                       @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        // Extract access token from Authorization header
-        String accessToken = null;
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            accessToken = authHeader.substring(7);
-        }
-        
+    public ResponseEntity<Void> logout(@Valid @RequestBody LogoutRequest request) {
+                                        
         // Get user ID from security context
         UserId userId = SecurityContextUtil.getCurrentUserIdAsDomain()
                 .orElseThrow(() -> new IllegalStateException("User not authenticated"));
@@ -94,8 +89,7 @@ public class AuthController {
         // Create logout command
         LogoutCommand command = new LogoutCommand(
                 userId,
-                accessToken
-                //request.refreshToken()
+                request.refreshToken()
         );
         
         logoutUseCase.logout(command);

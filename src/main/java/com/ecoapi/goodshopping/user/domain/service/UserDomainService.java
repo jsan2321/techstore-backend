@@ -1,6 +1,5 @@
 package com.ecoapi.goodshopping.user.domain.service;
 
-import com.ecoapi.goodshopping.common.domain.valueobjects.Email;
 import com.ecoapi.goodshopping.user.domain.model.User;
 
 /**

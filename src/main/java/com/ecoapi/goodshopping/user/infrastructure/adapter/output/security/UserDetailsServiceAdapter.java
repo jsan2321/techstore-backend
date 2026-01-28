@@ -1,6 +1,7 @@
-package com.ecoapi.goodshopping.user.infrastructure.security;
+package com.ecoapi.goodshopping.user.infrastructure.adapter.output.security;
 
 import com.ecoapi.goodshopping.common.domain.valueobjects.Email;
+import com.ecoapi.goodshopping.common.infrastructure.security.SecurityUser;
 import com.ecoapi.goodshopping.user.application.port.out.UserRepositoryPort;
 import com.ecoapi.goodshopping.user.domain.model.User;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,7 +37,7 @@ public class UserDetailsServiceAdapter implements UserDetailsService {
     
     private UserDetails buildUserDetails(User user) {
         Collection<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toList());
         
         return new SecurityUser(

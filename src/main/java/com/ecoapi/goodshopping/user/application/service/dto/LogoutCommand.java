@@ -10,6 +10,5 @@ import com.ecoapi.goodshopping.common.domain.valueobjects.UserId;
  */
 public record LogoutCommand(
     UserId userId,
-    //String accessToken,
     String refreshToken
 ) {}

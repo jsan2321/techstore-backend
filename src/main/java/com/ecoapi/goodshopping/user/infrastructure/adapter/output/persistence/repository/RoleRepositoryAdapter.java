@@ -2,6 +2,7 @@ package com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.r
 
 import com.ecoapi.goodshopping.user.application.port.out.RoleRepositoryPort;
 import com.ecoapi.goodshopping.user.domain.model.Role;
+import com.ecoapi.goodshopping.user.domain.model.RoleName;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.entity.RoleEntity;
 import com.ecoapi.goodshopping.user.infrastructure.adapter.output.persistence.mapper.UserPersistenceMapper;
 import org.springframework.stereotype.Component;
@@ -30,13 +31,13 @@ public class RoleRepositoryAdapter implements RoleRepositoryPort {
     }
     
     @Override
-    public Optional<Role> findByName(String name) {
+    public Optional<Role> findByName(RoleName name) {
         Optional<RoleEntity> entity = jpaRepository.findByName(name);
         return entity.map(mapper::toRoleDomain);
     }
     
     @Override
-    public boolean existsByName(String name) {
+    public boolean existsByName(RoleName name) {
         return jpaRepository.existsByName(name);
     }
 }

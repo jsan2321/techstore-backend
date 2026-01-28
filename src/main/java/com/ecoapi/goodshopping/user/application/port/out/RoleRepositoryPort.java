@@ -1,6 +1,7 @@
 package com.ecoapi.goodshopping.user.application.port.out;
 
 import com.ecoapi.goodshopping.user.domain.model.Role;
+import com.ecoapi.goodshopping.user.domain.model.RoleName;
 
 import java.util.Optional;
 
@@ -11,7 +12,7 @@ public interface RoleRepositoryPort {
     
     Role save(Role role);
     
-    Optional<Role> findByName(String name);
+    Optional<Role> findByName(RoleName name);
     
-    boolean existsByName(String name);
+    boolean existsByName(RoleName name);
 }
