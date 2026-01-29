@@ -1,16 +1,14 @@
 package com.ecoapi.goodshopping.product.application.service;
 
 import com.ecoapi.goodshopping.product.application.port.in.AddProductUseCase;
+import com.ecoapi.goodshopping.product.application.port.out.BrandRepositoryPort;
 import com.ecoapi.goodshopping.product.application.port.out.CategoryRepositoryPort;
 import com.ecoapi.goodshopping.product.application.port.out.ProductEventPublisherPort;
 import com.ecoapi.goodshopping.product.application.port.out.ProductRepositoryPort;
 import com.ecoapi.goodshopping.product.application.service.dto.ProductCommand;
 import com.ecoapi.goodshopping.product.domain.events.ProductCreatedEvent;
 import com.ecoapi.goodshopping.product.domain.exception.ProductAlreadyExistsException;
-import com.ecoapi.goodshopping.product.domain.model.Brand;
-import com.ecoapi.goodshopping.product.domain.model.Category;
-import com.ecoapi.goodshopping.product.domain.model.Money;
-import com.ecoapi.goodshopping.product.domain.model.Product;
+import com.ecoapi.goodshopping.product.domain.model.*;
 
 /**
  * Application Service for adding new products
@@ -20,32 +18,41 @@ public class AddProductService implements AddProductUseCase {
     
     private final ProductRepositoryPort productRepository;
     private final CategoryRepositoryPort categoryRepository;
+    private final BrandRepositoryPort brandRepository;
     private final ProductEventPublisherPort eventPublisher;
     
     public AddProductService(ProductRepositoryPort productRepository,
                             CategoryRepositoryPort categoryRepository,
+                            BrandRepositoryPort brandRepository,
                             ProductEventPublisherPort eventPublisher) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.brandRepository = brandRepository;
         this.eventPublisher = eventPublisher;
     }
     
     @Override
     public Product addProduct(ProductCommand command) {
+        // Validate that brand exists first
+        Brand brand = brandRepository.findById(BrandId.of(command.brandId()))
+                .orElseThrow(() -> new com.ecoapi.goodshopping.product.domain.exception.BrandNotFoundException(
+                    "Brand not found with id: " + command.brandId()));
+        
         // Check if product already exists
-        if (productRepository.existsByNameAndBrand(command.name(), command.brand())) {
+        if (productRepository.existsByNameAndBrandId(command.name(), command.brandId())) {
             throw new ProductAlreadyExistsException(
-                command.brand() + " " + command.name() + " already exists");
+                brand.getName() + " " + command.name() + " already exists");
         }
         
-        // Get or create category
-        Category category = categoryRepository.findByName(command.categoryName())
-                .orElseGet(() -> categoryRepository.save(new Category(command.categoryName())));
+        // Validate that category exists - no auto-creation
+        Category category = categoryRepository.findById(CategoryId.of(command.categoryId()))
+                .orElseThrow(() -> new com.ecoapi.goodshopping.product.domain.exception.CategoryNotFoundException(
+                    "Category not found with id: " + command.categoryId()));
         
         // Create domain product using factory method
         Product product = Product.create(
                 command.name(),
-                Brand.of(command.brand()),
+                brand,
                 Money.of(command.price()),
                 command.inventory(),
                 command.description(),
@@ -59,7 +66,7 @@ public class AddProductService implements AddProductUseCase {
         ProductCreatedEvent event = new ProductCreatedEvent(
                 savedProduct.getId(),
                 savedProduct.getName(),
-                savedProduct.getBrand().value(),
+                savedProduct.getBrand().getName(),
                 savedProduct.getPrice().value(),
                 savedProduct.getInventory(),
                 savedProduct.getCategory().getName()

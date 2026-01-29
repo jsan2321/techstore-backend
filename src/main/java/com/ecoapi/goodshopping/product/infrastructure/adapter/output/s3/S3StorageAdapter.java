@@ -1,12 +1,12 @@
 package com.ecoapi.goodshopping.product.infrastructure.adapter.output.s3;
 
+import com.ecoapi.goodshopping.product.application.port.out.ImageFile;
 import com.ecoapi.goodshopping.product.application.port.out.S3StoragePort;
 import com.ecoapi.goodshopping.product.domain.model.ImageUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -21,6 +21,7 @@ import java.util.UUID;
 /**
  * S3 Storage Adapter
  * Implementation of S3StoragePort for AWS S3 operations
+ * Uses domain abstraction ImageFile instead of framework-specific MultipartFile
  */
 @Component
 public class S3StorageAdapter implements S3StoragePort {
@@ -39,7 +40,7 @@ public class S3StorageAdapter implements S3StoragePort {
     }
     
     @Override
-    public ImageUrl uploadImage(MultipartFile file, Long productId) {
+    public ImageUrl uploadImage(ImageFile file, Long productId) {
         try {
             validateFile(file);
             
@@ -117,7 +118,7 @@ public class S3StorageAdapter implements S3StoragePort {
         }
     }
     
-    private void validateFile(MultipartFile file) {
+    private void validateFile(ImageFile file) {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
         }

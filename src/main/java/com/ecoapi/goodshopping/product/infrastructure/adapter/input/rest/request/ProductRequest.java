@@ -9,9 +9,8 @@ public record ProductRequest(
     @Size(min = 3, max = 150, message = "Product name must contain 3-150 characters")
     String name,
 
-    @NotBlank(message = "Brand is required")
-    @Size(min = 3, max = 150, message = "Brand must contain 3-150 characters")
-    String brand,
+    @NotNull(message = "Brand ID is required")
+    Long brandId,
 
     @NotNull(message = "Price is required") // Use NotNull for objects
     @Positive(message = "Price must be positive") // Checks value > 0
@@ -26,11 +25,10 @@ public record ProductRequest(
     @Size(min = 3, max = 150, message = "Description must contain 3-150 characters")
     String description,
 
-    @NotBlank(message = "Category is required")
-    @Size(min = 3, max = 150, message = "Category must contain 3-150 characters")
-    String categoryName
+    @NotNull(message = "Category ID is required")
+    Long categoryId
 ) {
     public ProductCommand toCommand() {
-        return new ProductCommand(name, brand, price, inventory, description, categoryName);
+        return new ProductCommand(name, brandId, price, inventory, description, categoryId);
     }
 }

@@ -21,7 +21,7 @@ public class ProductPersistenceMapper {
         }
         
         entity.setName(product.getName());
-        entity.setBrand(product.getBrand().value());
+        // Brand entity will be set by the calling service
         entity.setPrice(product.getPrice().value());
         entity.setInventory(product.getInventory());
         entity.setDescription(product.getDescription());
@@ -38,7 +38,7 @@ public class ProductPersistenceMapper {
         ProductId productId = entity.getId() != null ? ProductId.of(entity.getId()) : null;
         Category category = toCategoryDomain(entity.getCategory());
         Money price = Money.of(entity.getPrice());
-        Brand brand = Brand.of(entity.getBrand());
+        Brand brand = entity.getBrand() != null ? toBrandDomain(entity.getBrand()) : null;
         ImageUrl imageUrl = ImageUrl.ofNullable(entity.getImageUrl());
         
         return Product.reconstitute(
@@ -75,5 +75,31 @@ public class ProductPersistenceMapper {
         CategoryId categoryId = entity.getId() != null ? CategoryId.of(entity.getId()) : null;
         
         return new Category(categoryId, entity.getName());
+    }
+    
+    /**
+     * Convert Domain Brand to JPA BrandEntity
+     */
+    public com.ecoapi.goodshopping.product.infrastructure.adapter.output.persistence.entity.BrandEntity toBrandEntity(Brand brand) {
+        com.ecoapi.goodshopping.product.infrastructure.adapter.output.persistence.entity.BrandEntity entity = 
+            new com.ecoapi.goodshopping.product.infrastructure.adapter.output.persistence.entity.BrandEntity();
+        
+        if (brand.getId() != null) {
+            entity.setId(brand.getId().value());
+        }
+        
+        entity.setName(brand.getName());
+        
+        return entity;
+    }
+    
+    /**
+     * Convert JPA BrandEntity to Domain Brand
+     */
+    public Brand toBrandDomain(com.ecoapi.goodshopping.product.infrastructure.adapter.output.persistence.entity.BrandEntity entity) {
+        BrandId brandId = 
+            entity.getId() != null ? BrandId.of(entity.getId()) : null;
+        
+        return new Brand(brandId, entity.getName());
     }
 }

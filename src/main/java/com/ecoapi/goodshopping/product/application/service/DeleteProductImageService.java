@@ -5,13 +5,11 @@ import com.ecoapi.goodshopping.product.application.port.out.ProductRepositoryPor
 import com.ecoapi.goodshopping.product.application.port.out.S3StoragePort;
 import com.ecoapi.goodshopping.product.domain.model.Product;
 import com.ecoapi.goodshopping.product.domain.model.ProductId;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service for deleting product images
+ * Framework-agnostic application service
  */
-@Service
 public class DeleteProductImageService implements DeleteProductImageUseCase {
     
     private final ProductRepositoryPort productRepository;
@@ -24,7 +22,6 @@ public class DeleteProductImageService implements DeleteProductImageUseCase {
     }
     
     @Override
-    @Transactional
     public Product deleteImage(Long productId) {
         // Find the product
         Product product = productRepository.findById(ProductId.of(productId))

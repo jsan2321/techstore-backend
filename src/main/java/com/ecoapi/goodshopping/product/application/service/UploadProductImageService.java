@@ -1,19 +1,17 @@
 package com.ecoapi.goodshopping.product.application.service;
 
 import com.ecoapi.goodshopping.product.application.port.in.UploadProductImageUseCase;
+import com.ecoapi.goodshopping.product.application.port.out.ImageFile;
 import com.ecoapi.goodshopping.product.application.port.out.ProductRepositoryPort;
 import com.ecoapi.goodshopping.product.application.port.out.S3StoragePort;
 import com.ecoapi.goodshopping.product.domain.model.ImageUrl;
 import com.ecoapi.goodshopping.product.domain.model.Product;
 import com.ecoapi.goodshopping.product.domain.model.ProductId;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Service for uploading product images
+ * Framework-agnostic application service
  */
-@Service
 public class UploadProductImageService implements UploadProductImageUseCase {
     
     private final ProductRepositoryPort productRepository;
@@ -26,8 +24,7 @@ public class UploadProductImageService implements UploadProductImageUseCase {
     }
     
     @Override
-    @Transactional
-    public Product uploadImage(Long productId, MultipartFile imageFile) {
+    public Product uploadImage(Long productId, ImageFile imageFile) {
         // Find the product
         Product product = productRepository.findById(ProductId.of(productId))
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));

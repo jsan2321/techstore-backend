@@ -18,7 +18,7 @@ public record ProductResponse(
         return new ProductResponse(
             product.getId() != null ? product.getId().value() : null,
             product.getName(),
-            product.getBrand().value(),
+            product.getBrand().getName(),
             product.getPrice().value(),
             product.getInventory(),
             product.getDescription(),

@@ -9,13 +9,13 @@ public interface JpaProductRepository extends JpaRepository<ProductEntity, Long>
     
     List<ProductEntity> findByCategoryName(String categoryName);
     
-    List<ProductEntity> findByBrand(String brand);
+    List<ProductEntity> findByBrandName(String brandName);
     
-    List<ProductEntity> findByCategoryNameAndBrand(String categoryName, String brand);
+    List<ProductEntity> findByCategoryNameAndBrandName(String categoryName, String brandName);
     
     List<ProductEntity> findByName(String name);
     
-    List<ProductEntity> findByBrandAndName(String brand, String name);
+    List<ProductEntity> findByBrandNameAndName(String brandName, String name);
     
-    boolean existsByNameAndBrand(String name, String brand);
+    boolean existsByNameAndBrandId(String name, Long brandId);
 }

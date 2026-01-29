@@ -8,11 +8,11 @@ import java.math.BigDecimal;
  */
 public record ProductCommand(
     String name,
-    String brand,
+    Long brandId,
     BigDecimal price,
     int inventory,
     String description,
-    String categoryName
+    Long categoryId
 ) {
     public ProductCommand {
         if (name == null || name.isBlank()) {
@@ -21,11 +21,8 @@ public record ProductCommand(
         if (name.length() > 200) {
             throw new IllegalArgumentException("Product name cannot exceed 200 characters");
         }
-        if (brand == null || brand.isBlank()) {
-            throw new IllegalArgumentException("Product brand is required");
-        }
-        if (brand.length() > 100) {
-            throw new IllegalArgumentException("Product brand cannot exceed 100 characters");
+        if (brandId == null) {
+            throw new IllegalArgumentException("Brand ID is required");
         }
         if (price == null) {
             throw new IllegalArgumentException("Product price is required");
@@ -39,8 +36,8 @@ public record ProductCommand(
         if (description != null && description.length() > 1000) {
             throw new IllegalArgumentException("Product description cannot exceed 1000 characters");
         }
-        if (categoryName == null || categoryName.isBlank()) {
-            throw new IllegalArgumentException("Category name is required");
+        if (categoryId == null) {
+            throw new IllegalArgumentException("Category ID is required");
         }
     }
 }

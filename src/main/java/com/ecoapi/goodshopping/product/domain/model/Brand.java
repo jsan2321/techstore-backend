@@ -3,32 +3,53 @@ package com.ecoapi.goodshopping.product.domain.model;
 import java.util.Objects;
 
 /**
- * Value Object representing a Product Brand
- * Ensures brand name is valid and properly formatted
+ * Brand Entity - Part of Product aggregate
+ * Pure domain model with no infrastructure dependencies
+ * Refactored to match Category structure
  */
 public class Brand {
     
-    private final String name;
+    private BrandId id;
+    private String name;
     
-    private Brand(String name) {
+    // Constructor for creating new brand
+    public Brand(String name) {
+        validateName(name);
         this.name = name.trim();
     }
     
-    public static Brand of(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Brand name cannot be null or empty");
-        }
-        
-        String trimmed = name.trim();
-        
-        if (trimmed.length() > 100) {
-            throw new IllegalArgumentException("Brand name cannot exceed 100 characters");
-        }
-        
-        return new Brand(trimmed);
+    // Constructor for reconstituting from persistence
+    public Brand(BrandId id, String name) {
+        validateName(name);
+        this.id = id;
+        this.name = name.trim();
     }
     
-    public String value() {
+    // Business logic
+    
+    public void changeName(String newName) {
+        validateName(newName);
+        this.name = newName.trim();
+    }
+    
+    // Validation
+    
+    private void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Brand name cannot be empty");
+        }
+        if (name.length() > 100) {
+            throw new IllegalArgumentException("Brand name cannot exceed 100 characters");
+        }
+    }
+    
+    // Getters
+    
+    public BrandId getId() {
+        return id;
+    }
+    
+    public String getName() {
         return name;
     }
     
@@ -47,6 +68,9 @@ public class Brand {
     
     @Override
     public String toString() {
-        return name;
+        return "Brand{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
