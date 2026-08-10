@@ -45,9 +45,9 @@ public class OpenApiConfig {
 
     private Info apiInfo() {
         return new Info()
-                .title("Good Shopping API")
+                .title("TechStore API")
                 .description("""
-                        ## Good Shopping E-Commerce REST API
+                        ## TechStore E-Commerce REST API
                         
                         A comprehensive e-commerce backend API built with **Spring Boot** following **Hexagonal Architecture** principles.
                         
@@ -68,7 +68,7 @@ public class OpenApiConfig {
                         """)
                 .version("1.0.0")
                 .contact(new Contact()
-                        .name("Good Shopping Team")
+                        .name("TechStore Team")
                         .email("support@techstore.com")
                         .url("https://techstore.com"))
                 .license(new License()

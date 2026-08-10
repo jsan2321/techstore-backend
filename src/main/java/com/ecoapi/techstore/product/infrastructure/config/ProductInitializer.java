@@ -8,6 +8,8 @@ import java.util.Map;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.ecoapi.techstore.common.domain.valueobjects.Money;
 import com.ecoapi.techstore.product.application.port.out.BrandRepositoryPort;
@@ -25,10 +27,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductInitializer {
 
     @Bean
+    @ConditionalOnProperty(name = "app.seed.demo-catalog", havingValue = "true")
     public CommandLineRunner initProducts(
             ProductRepositoryPort productRepository,
             CategoryRepositoryPort categoryRepository,
-            BrandRepositoryPort brandRepository) {
+            BrandRepositoryPort brandRepository,
+            @Value("${app.public-url}") String publicUrl) {
         return args -> {
             log.info("Starting database seeding for categories, brands, and products...");
 
@@ -71,7 +75,7 @@ public class ProductInitializer {
                 categoryMap.get("Computer Accessories"),
                 new BigDecimal("649.00"),
                 30, // 30% discount
-                "http://localhost:4200/images/gaming_monitor.png",
+                publicUrl + "/images/gaming_monitor.png",
                 "Experience immersive gaming with the Samsung Ultra 4K Gaming Monitor, featuring a high refresh rate and vibrant color display."
             );
 
@@ -82,7 +86,7 @@ public class ProductInitializer {
                 categoryMap.get("Smartphones"),
                 new BigDecimal("999.00"),
                 20, // 20% discount
-                "http://localhost:4200/images/galaxy_s21.png",
+                publicUrl + "/images/galaxy_s21.png",
                 "The Samsung Galaxy S21 Phone offers a brilliant display, pro-grade camera, and powerful performance."
             );
 
@@ -93,7 +97,7 @@ public class ProductInitializer {
                 categoryMap.get("Smartphones"),
                 new BigDecimal("1099.00"),
                 20, // 20% discount
-                "http://localhost:4200/images/pixel_6_pro.png",
+                publicUrl + "/images/pixel_6_pro.png",
                 "Experience the best of Google with the Pixel 6 Pro, featuring a revolutionary camera and advanced AI features."
             );
 
@@ -104,7 +108,7 @@ public class ProductInitializer {
                 categoryMap.get("Computer Accessories"),
                 new BigDecimal("1399.00"),
                 20, // 20% discount
-                "http://localhost:4200/images/macbook_air_m2.png",
+                publicUrl + "/images/macbook_air_m2.png",
                 "Supercharged by the next-generation M2 chip, the Apple MacBook Air M2 combines incredible performance with silent operation."
             );
 

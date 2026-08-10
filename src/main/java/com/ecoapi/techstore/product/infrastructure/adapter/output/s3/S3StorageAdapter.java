@@ -15,6 +15,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -33,6 +34,9 @@ public class S3StorageAdapter implements S3StoragePort {
     
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
+
+    @Value("${aws.s3.public-base-url:}")
+    private String publicBaseUrl;
     
     public S3StorageAdapter(S3Client s3Client, S3Presigner s3Presigner) {
         this.s3Client = s3Client;
@@ -52,10 +56,14 @@ public class S3StorageAdapter implements S3StoragePort {
                     .contentType(file.getContentType())
                     .build();
             
-            s3Client.putObject(putObjectRequest, 
-                    RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+            try (InputStream inputStream = file.getInputStream()) {
+                byte[] bytes = inputStream.readAllBytes();
+                s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+            }
             
-            String imageUrlString = String.format("https://%s.s3.amazonaws.com/%s", bucketName, key);
+            String imageUrlString = publicBaseUrl == null || publicBaseUrl.isBlank()
+                    ? String.format("https://%s.s3.amazonaws.com/%s", bucketName, key)
+                    : publicBaseUrl.replaceAll("/+$", "") + "/" + key;
             ImageUrl imageUrl = ImageUrl.of(imageUrlString);
             logger.info("Successfully uploaded image for product {}: {}", productId, imageUrl.value());
             

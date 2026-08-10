@@ -8,6 +8,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import java.net.URI;
 
 /**
  * AWS S3 Configuration
@@ -24,24 +25,33 @@ public class S3Configuration {
     
     @Value("${aws.s3.region}")
     private String region;
+
+    @Value("${aws.s3.endpoint:}")
+    private String endpoint;
     
     @Bean
     public S3Client s3Client() {
         AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
         
-        return S3Client.builder()
+        var builder = S3Client.builder()
                 .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-                .build();
+                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials));
+        if (endpoint != null && !endpoint.isBlank()) {
+            builder.endpointOverride(URI.create(endpoint));
+        }
+        return builder.build();
     }
     
     @Bean
     public S3Presigner s3Presigner() {
         AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
         
-        return S3Presigner.builder()
+        var builder = S3Presigner.builder()
                 .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-                .build();
+                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials));
+        if (endpoint != null && !endpoint.isBlank()) {
+            builder.endpointOverride(URI.create(endpoint));
+        }
+        return builder.build();
     }
 }

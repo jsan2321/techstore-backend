@@ -27,6 +27,7 @@ import com.ecoapi.techstore.order.infrastructure.adapter.TransactionalOrderUseCa
 import com.ecoapi.techstore.order.infrastructure.adapter.TransactionalOrderUseCaseWrapper.TransactionalGetOrderUseCase;
 import com.ecoapi.techstore.order.infrastructure.adapter.TransactionalOrderUseCaseWrapper.TransactionalInitiatePayPalPaymentUseCase;
 import com.ecoapi.techstore.order.infrastructure.adapter.TransactionalOrderUseCaseWrapper.TransactionalPlaceOrderUseCase;
+import com.ecoapi.techstore.order.infrastructure.adapter.TransactionalOrderUseCaseWrapper.TransactionalSearchOrderUseCase;
 import com.ecoapi.techstore.order.infrastructure.adapter.TransactionalOrderUseCaseWrapper.TransactionalUpdateOrderStatusUseCase;
 import com.ecoapi.techstore.order.infrastructure.adapter.output.CartAccessAdapter;
 import com.ecoapi.techstore.order.infrastructure.adapter.output.events.TransactionalOrderEventPublisherAdapter;
@@ -164,7 +165,8 @@ public class OrderConfiguration {
     
     @Bean
     public SearchOrderUseCase searchOrderUseCase(OrderRepositoryPort orderRepository) {
-        return new SearchOrderService(orderRepository);
+        SearchOrderService service = new SearchOrderService(orderRepository);
+        return new TransactionalSearchOrderUseCase(service);
     }
 
     @Bean

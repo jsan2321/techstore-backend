@@ -51,13 +51,14 @@ public class AdminUserInitializer {
 			}
 
 			Email email = new Email(adminEmail);
+			User adminUser;
 			if (userRepository.existsByEmail(email)) {
-				log.info("Admin user already exists for email {}", adminEmail);
-				return;
+				log.info("Admin user already exists for email {}. Ensuring admin roles...", adminEmail);
+				adminUser = userRepository.findByEmail(email).get();
+			} else {
+				String passwordHash = passwordEncoder.encode(adminPassword);
+				adminUser = User.register(adminFirstName, adminLastName, email, passwordHash);
 			}
-
-			String passwordHash = passwordEncoder.encode(adminPassword);
-			User adminUser = User.register(adminFirstName, adminLastName, email, passwordHash);
 
 			Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
 					.orElseGet(() -> roleRepository.save(new Role(RoleName.ROLE_ADMIN)));

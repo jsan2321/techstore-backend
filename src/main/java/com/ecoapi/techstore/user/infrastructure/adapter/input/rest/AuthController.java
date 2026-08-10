@@ -25,8 +25,6 @@ import com.ecoapi.techstore.common.infrastructure.security.util.SecurityContextU
 import com.ecoapi.techstore.user.infrastructure.adapter.input.rest.request.ForgotPasswordRequest;
 import com.ecoapi.techstore.user.infrastructure.adapter.input.rest.request.GoogleLoginRequest;
 import com.ecoapi.techstore.user.infrastructure.adapter.input.rest.request.LoginRequest;
-import com.ecoapi.techstore.user.infrastructure.adapter.input.rest.request.LogoutRequest;
-import com.ecoapi.techstore.user.infrastructure.adapter.input.rest.request.RefreshTokenRequest;
 import com.ecoapi.techstore.user.infrastructure.adapter.input.rest.request.RegisterRequest;
 import com.ecoapi.techstore.user.infrastructure.adapter.input.rest.request.ResendEmailConfirmationRequest;
 import com.ecoapi.techstore.user.infrastructure.adapter.input.rest.request.ResetPasswordRequest;
@@ -43,6 +41,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseCookie;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,6 +65,21 @@ public class AuthController {
     private final ResendEmailConfirmationUseCase resendEmailConfirmationUseCase;
     private final RequestPasswordResetUseCase requestPasswordResetUseCase;
     private final ResetPasswordUseCase resetPasswordUseCase;
+
+    @Value("${app.security.refresh-cookie.name}")
+    private String refreshCookieName;
+
+    @Value("${app.security.refresh-cookie.secure}")
+    private boolean refreshCookieSecure;
+
+    @Value("${app.security.refresh-cookie.same-site}")
+    private String refreshCookieSameSite;
+
+    @Value("${app.security.refresh-cookie.path}")
+    private String refreshCookiePath;
+
+    @Value("${auth.refreshToken.expirationInDays}")
+    private long refreshTokenExpirationDays;
     
     @Operation(
             summary = "Register a new user",
@@ -115,7 +130,7 @@ public class AuthController {
         AuthenticationResult result = loginUseCase.execute(command);
         
         // Map to REST response using the static from() method
-        return ResponseEntity.ok(AuthResponse.from(result));
+        return authenticatedResponse(result);
     }
 
     @Operation(
@@ -130,7 +145,7 @@ public class AuthController {
     @PostMapping("/google-login")
     public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
         AuthenticationResult result = googleLoginUseCase.execute(new GoogleLoginCommand(request.idToken()));
-        return ResponseEntity.ok(AuthResponse.from(result));
+        return authenticatedResponse(result);
     }
 
     @Operation(
@@ -143,7 +158,7 @@ public class AuthController {
     })
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> logout(@Valid @RequestBody LogoutRequest request) {
+    public ResponseEntity<Void> logout(@CookieValue(name = "techstore_refresh", required = false) String refreshToken) {
                                         
         // Get user ID from security context
         UserId userId = SecurityContextUtil.getCurrentUserIdAsDomain()
@@ -152,11 +167,13 @@ public class AuthController {
         // Create logout command
         LogoutCommand command = new LogoutCommand(
                 userId,
-                request.refreshToken()
+                refreshToken
         );
         
         logoutUseCase.logout(command);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+                .header("Set-Cookie", expiredRefreshCookie().toString())
+                .build();
     }
     
     @Operation(
@@ -168,11 +185,12 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = AuthResponse.class))),
             @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
     })
-    @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-        RefreshTokenCommand command = new RefreshTokenCommand(request.refreshToken());
+    @RequestMapping(value = "/refresh", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<AuthResponse> refreshToken(
+            @CookieValue(name = "techstore_refresh", required = false) String refreshToken) {
+        RefreshTokenCommand command = new RefreshTokenCommand(refreshToken);
         AuthenticationResult result = refreshTokenUseCase.refreshAccessToken(command);
-        return ResponseEntity.ok(AuthResponse.from(result));
+        return authenticatedResponse(result);
     }
 
     @Operation(
@@ -233,5 +251,34 @@ public class AuthController {
                 request.confirmPassword()
         ));
         return ResponseEntity.ok().build();
+    }
+
+    private ResponseEntity<AuthResponse> authenticatedResponse(AuthenticationResult result) {
+        if (result.refreshToken() == null) {
+            throw new IllegalStateException("Authentication did not return a refresh token");
+        }
+        return ResponseEntity.ok()
+                .header("Set-Cookie", refreshCookie(result.refreshToken().getToken()).toString())
+                .body(AuthResponse.from(result));
+    }
+
+    private ResponseCookie refreshCookie(String token) {
+        return ResponseCookie.from(refreshCookieName, token)
+                .httpOnly(true)
+                .secure(refreshCookieSecure)
+                .sameSite(refreshCookieSameSite)
+                .path(refreshCookiePath)
+                .maxAge(java.time.Duration.ofDays(refreshTokenExpirationDays))
+                .build();
+    }
+
+    private ResponseCookie expiredRefreshCookie() {
+        return ResponseCookie.from(refreshCookieName, "")
+                .httpOnly(true)
+                .secure(refreshCookieSecure)
+                .sameSite(refreshCookieSameSite)
+                .path(refreshCookiePath)
+                .maxAge(0)
+                .build();
     }
 }

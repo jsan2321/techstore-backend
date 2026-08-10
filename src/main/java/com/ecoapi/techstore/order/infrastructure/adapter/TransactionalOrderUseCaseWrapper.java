@@ -1,14 +1,17 @@
 package com.ecoapi.techstore.order.infrastructure.adapter;
 
+import com.ecoapi.techstore.common.application.dto.PagedResult;
 import com.ecoapi.techstore.order.application.port.in.GetOrderUseCase;
 import com.ecoapi.techstore.order.application.port.in.CapturePayPalPaymentUseCase;
 import com.ecoapi.techstore.order.application.port.in.InitiatePayPalPaymentUseCase;
 import com.ecoapi.techstore.order.application.port.in.PlaceOrderUseCase;
+import com.ecoapi.techstore.order.application.port.in.SearchOrderUseCase;
 import com.ecoapi.techstore.order.application.port.in.UpdateOrderStatusUseCase;
 import com.ecoapi.techstore.order.application.service.dto.CapturePayPalPaymentCommand;
 import com.ecoapi.techstore.order.application.service.dto.GetOrderQuery;
 import com.ecoapi.techstore.order.application.service.dto.InitiatePayPalPaymentCommand;
 import com.ecoapi.techstore.order.application.service.dto.PlaceOrderCommand;
+import com.ecoapi.techstore.order.application.service.dto.SearchOrderCriteria;
 import com.ecoapi.techstore.order.application.service.dto.UpdateOrderStatusCommand;
 import com.ecoapi.techstore.order.domain.model.Order;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,6 +122,23 @@ public class TransactionalOrderUseCaseWrapper {
         @Transactional
         public Order execute(CapturePayPalPaymentCommand command) {
             return delegate.execute(command);
+        }
+    }
+
+    /**
+     * Wraps SearchOrderUseCase with read-only transactional behavior
+     */
+    public static class TransactionalSearchOrderUseCase implements SearchOrderUseCase {
+        private final SearchOrderUseCase delegate;
+
+        public TransactionalSearchOrderUseCase(SearchOrderUseCase delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public PagedResult<Order> search(SearchOrderCriteria criteria) {
+            return delegate.search(criteria);
         }
     }
 }

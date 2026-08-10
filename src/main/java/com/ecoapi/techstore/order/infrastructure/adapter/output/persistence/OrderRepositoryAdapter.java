@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,7 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
     }
     
     @Override
+    @Transactional
     public Order save(Order order) {
         OrderEntity entity = mapper.toEntity(order);
         OrderEntity savedEntity = jpaOrderRepository.save(entity);
@@ -39,12 +41,14 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public Optional<Order> findById(OrderId orderId) {
         return jpaOrderRepository.findById(orderId.getValue())
                 .map(mapper::toDomain);
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<Order> findByUserId(UserId userId) {
         return jpaOrderRepository.findByUserId(userId.value()).stream()
                 .map(mapper::toDomain)
@@ -52,6 +56,7 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<Order> findAll() {
         return jpaOrderRepository.findAll().stream()
                 .map(mapper::toDomain)
@@ -59,6 +64,7 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public PagedResult<Order> search(SearchOrderCriteria criteria) {
         Sort sort = Sort.by(
             criteria.sortDirection().equalsIgnoreCase("desc") 

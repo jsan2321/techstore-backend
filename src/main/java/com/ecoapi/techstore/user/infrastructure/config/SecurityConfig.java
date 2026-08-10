@@ -9,11 +9,12 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -22,9 +23,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.ecoapi.techstore.common.infrastructure.security.jwt.AuthTokenFilter;
 import com.ecoapi.techstore.common.infrastructure.security.jwt.JwtAuthEntryPoint;
+import com.ecoapi.techstore.common.infrastructure.security.RateLimitFilter;
 
 import java.util.Arrays;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
 
 /**
  * Spring Security Configuration for Hexagonal Architecture
@@ -39,6 +44,10 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthEntryPoint authEntryPoint;
     private final AuthTokenFilter authTokenFilter;
+    private final ObjectProvider<RateLimitFilter> rateLimitFilterProvider;
+
+    @Value("${app.security.cors.allowed-origins}")
+    private String allowedOrigins;
     
     // List of URL patterns that require authentication
     private static final List<String> SECURED_URLS = List.of(
@@ -85,10 +94,31 @@ public class SecurityConfig {
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        // Opt out of deferred CSRF tokens to ensure cookie is always populated
+        requestHandler.setCsrfRequestAttributeName(null);
+
         http
-            // CSRF disabled for stateless JWT API
-            .csrf(AbstractHttpConfigurer::disable)
-            
+            // The refresh token is an HttpOnly cookie. Protect every
+            // state-changing request with Angular's XSRF cookie/header pair.
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(csrfTokenRepository())
+                .csrfTokenRequestHandler(requestHandler)
+                .ignoringRequestMatchers(
+                    "/api/v1/auth/login",
+                    "/api/v1/admin/auth/login",
+                    "/api/v1/auth/register",
+                    "/api/v1/auth/resend-confirmation",
+                    "/api/v1/auth/confirm-email",
+                    "/api/v1/auth/forgot-password",
+                    "/api/v1/auth/reset-password",
+                    // Refresh and logout are protected by the HttpOnly refresh cookie,
+                    // not by form state — CSRF is not needed and breaks session restore
+                    // after cross-domain redirects (e.g. returning from PayPal sandbox).
+                    "/api/v1/auth/refresh",
+                    "/api/v1/auth/logout"
+                )
+            )
             // CORS configuration
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             
@@ -107,7 +137,9 @@ public class SecurityConfig {
             
             // Authorization rules
             .authorizeHttpRequests(auth -> auth
-                    // Swagger/OpenAPI endpoints - public access
+                    // Liveness/readiness and CSRF bootstrap are public. Swagger
+                    // is disabled in the Render profile and stays local-only.
+                    .requestMatchers("/actuator/health/**", "/api/v1/csrf").permitAll()
                     .requestMatchers(SWAGGER_WHITELIST).permitAll()
                     // Secured endpoints - require authentication
                     .requestMatchers(SECURED_URLS.toArray(String[]::new))
@@ -118,6 +150,9 @@ public class SecurityConfig {
         // Authentication provider
         http.authenticationProvider(daoAuthenticationProvider());
         
+        rateLimitFilterProvider.ifAvailable(filter ->
+                http.addFilterBefore(filter, AuthTokenFilter.class));
+
         // JWT filter
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
         
@@ -131,9 +166,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:4200"));
+        configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isBlank())
+                .toList());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "X-XSRF-TOKEN"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
@@ -141,5 +179,13 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookiePath("/");
+        repository.setHeaderName("X-XSRF-TOKEN");
+        return repository;
     }
 }

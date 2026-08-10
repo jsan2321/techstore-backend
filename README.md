@@ -6,7 +6,7 @@ TechStore Backend is the REST API for the TechStore e-commerce application. It p
 
 - Product, brand, and category catalog with public browsing and administrative management.
 - Customer registration, email confirmation, password reset, password changes, and Google Sign-In.
-- JWT access and refresh-token authentication with role-based administration endpoints.
+- JWT access tokens with HttpOnly refresh-cookie sessions, CSRF protection, and role-based administration endpoints.
 - Per-user shopping carts and order placement with shipping addresses.
 - PayPal Sandbox payment initiation and capture.
 - Product-image uploads backed by Amazon S3-compatible storage.
@@ -29,7 +29,7 @@ The application root package is `com.ecoapi.techstore`. See [Hexagonal.md](Hexag
 - JWT, BCrypt, and Google Identity Services token verification
 - AWS S3-compatible object storage
 - PayPal Sandbox
-- OpenAPI / Swagger UI
+- Flyway migrations, Actuator health probes, Redis rate limiting, and OpenAPI / Swagger UI (local profile only)
 
 ## Prerequisites
 
@@ -52,7 +52,7 @@ On macOS/Linux:
 cp .env.example .env
 ```
 
-`.env` is ignored by Git. It contains database, mail, JWT, admin, storage, Google, and PayPal settings. Do not commit it. The tracked `.env.example` documents every required variable.
+`.env` is ignored by Git. It contains database, mail, JWT, admin, storage, Google, and PayPal settings.
 
 ## Run locally
 
@@ -84,7 +84,7 @@ MailHog receives local email at SMTP port `1025`; its inbox is available at `htt
 - OpenAPI document: `http://localhost:8081/v3/api-docs`
 - API base path: `http://localhost:8081/api/v1`
 
-Authentication endpoints issue a JWT access token and a refresh token. Send the access token as `Authorization: Bearer <token>` for authenticated routes. Administrative operations require an account with the `ADMIN` role. Google Sign-In sends the browser-issued Google ID token to the API, where the token is verified before a local session is created.
+Authentication endpoints issue a short-lived JWT access token and set the refresh token only in an HttpOnly cookie. Send the access token as `Authorization: Bearer <token>` for authenticated routes. The frontend requests `/api/v1/csrf` before state-changing calls and sends Angular's `X-XSRF-TOKEN` header. Administrative operations require an account with the `ADMIN` role. Google Sign-In sends the browser-issued Google ID token to the API, where the token is verified before a local session is created.
 
 ## Integrations
 
@@ -107,7 +107,7 @@ Package the application:
 .\mvnw.cmd package
 ```
 
-The Dockerfile expects the packaged JAR in `target/`:
+The Dockerfile builds the JAR in a multi-stage image:
 
 ```bash
 docker build -t techstore-backend .

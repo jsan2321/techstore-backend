@@ -1,0 +1,33 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+  mail:
+    host: localhost
+    port: 1025
+
+auth:
+  token:
+    jwtSecret: test-only-jwt-secret-that-is-long-enough-for-hs256-validation
+
+app:
+  seed:
+    demo-catalog: false
+  mail:
+    fail-on-error: false
+
+aws:
+  s3:
+    access-key: test
+    secret-key: test
+    region: us-east-1
+    bucket-name: techstore-test
+
+paypal:
+  client-id: test
+  secret: test
+
+app.security.google.client-id: test.apps.googleusercontent.com
