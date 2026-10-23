@@ -5,8 +5,10 @@ import com.ecoapi.techstore.order.domain.exception.InsufficientStockException;
 import com.ecoapi.techstore.product.application.port.out.ProductRepositoryPort;
 import com.ecoapi.techstore.product.domain.model.Product;
 import com.ecoapi.techstore.common.domain.valueobjects.ProductId;
+import jakarta.persistence.OptimisticLockException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 /**
  * Infrastructure adapter for stock reservation
@@ -67,7 +69,13 @@ public class StockReservationAdapter implements StockReservationPort {
         
         // Reduce stock
         product.reduceStock(quantity);
-        productRepository.save(product);
+        try {
+            productRepository.save(product);
+        } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+            logger.warn("Concurrent stock modification detected for product ID: {}", productId);
+            throw new InsufficientStockException(
+                    "Unable to reserve stock for " + product.getName() + " due to concurrent purchase. Please retry.");
+        }
         
         logger.info("Reserved {} units of product {} (ID: {}). Remaining stock: {}", 
             quantity, product.getName(), productId, product.getStock());

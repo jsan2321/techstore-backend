@@ -20,7 +20,7 @@ spring:
 
 app:
   seed:
-    demo-catalog: ${SEED_DEMO_CATALOG:true}
+    demo-catalog: ${SEED_DEMO_CATALOG:false}
   mail:
     provider: resend
     fail-on-error: true

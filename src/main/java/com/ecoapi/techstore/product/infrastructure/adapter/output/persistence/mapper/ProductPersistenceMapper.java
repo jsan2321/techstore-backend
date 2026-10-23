@@ -33,6 +33,9 @@ public class ProductPersistenceMapper {
         entity.setDiscountPercentage(product.getDiscountPercentage());
         entity.setFeatured(product.isFeatured());
         entity.setActive(product.isActive());
+        if (product.getVersion() != null) {
+            entity.setVersion(product.getVersion());
+        }
 
         return entity;
     }
@@ -58,7 +61,8 @@ public class ProductPersistenceMapper {
                 imageUrl,
             entity.isActive(),
             entity.getDiscountPercentage(),
-            entity.isFeatured()
+            entity.isFeatured(),
+            entity.getVersion()
         );
     }
     

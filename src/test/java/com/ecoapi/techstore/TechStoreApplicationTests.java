@@ -33,7 +33,7 @@ class TechStoreApplicationTests {
                 "select count(*) from information_schema.tables where table_schema = 'public' and table_name = 'refresh_tokens'",
                 Integer.class);
 
-        assertThat(migrationCount).isEqualTo(1);
+        assertThat(migrationCount).isEqualTo(2);
         assertThat(productTableCount).isEqualTo(1);
         assertThat(refreshTokenTableCount).isEqualTo(1);
     }

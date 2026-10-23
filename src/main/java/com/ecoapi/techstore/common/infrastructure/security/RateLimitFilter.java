@@ -45,12 +45,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String client = request.getHeader("X-Forwarded-For");
-        if (client == null || client.isBlank()) {
-            client = request.getRemoteAddr();
-        } else {
-            client = client.split(",", 2)[0].trim();
-        }
+        String client = resolveClientIp(request);
         String key = "rate-limit:" + request.getRequestURI() + ":" + client;
         try {
             Long count = redis.opsForValue().increment(key);
@@ -68,5 +63,20 @@ public class RateLimitFilter extends OncePerRequestFilter {
             // telemetry dependency into a public error leak.
         }
         chain.doFilter(request, response);
+    }
+
+    String resolveClientIp(HttpServletRequest request) {
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp.trim();
+        }
+
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            String[] ips = xForwardedFor.split(",");
+            return ips[ips.length - 1].trim();
+        }
+
+        return request.getRemoteAddr();
     }
 }

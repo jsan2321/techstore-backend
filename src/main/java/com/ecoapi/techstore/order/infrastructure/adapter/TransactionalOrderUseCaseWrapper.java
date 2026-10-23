@@ -13,6 +13,7 @@ import com.ecoapi.techstore.order.application.service.dto.InitiatePayPalPaymentC
 import com.ecoapi.techstore.order.application.service.dto.PlaceOrderCommand;
 import com.ecoapi.techstore.order.application.service.dto.SearchOrderCriteria;
 import com.ecoapi.techstore.order.application.service.dto.UpdateOrderStatusCommand;
+import com.ecoapi.techstore.order.domain.exception.PaymentProcessingException;
 import com.ecoapi.techstore.order.domain.model.Order;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,7 +120,7 @@ public class TransactionalOrderUseCaseWrapper {
         }
 
         @Override
-        @Transactional
+        @Transactional(noRollbackFor = {PaymentProcessingException.class})
         public Order execute(CapturePayPalPaymentCommand command) {
             return delegate.execute(command);
         }

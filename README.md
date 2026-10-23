@@ -74,15 +74,15 @@ On macOS/Linux:
 ./mvnw spring-boot:run
 ```
 
-The API listens on `http://localhost:8081` and serves routes below `/api/v1`.
+The API listens on `http://localhost:8080` and serves routes below `/api/v1`.
 
 MailHog receives local email at SMTP port `1025`; its inbox is available at `http://localhost:8025`.
 
 ## API and authentication
 
-- Swagger UI: `http://localhost:8081/swagger-ui.html`
-- OpenAPI document: `http://localhost:8081/v3/api-docs`
-- API base path: `http://localhost:8081/api/v1`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI document: `http://localhost:8080/v3/api-docs`
+- API base path: `http://localhost:8080/api/v1`
 
 Authentication endpoints issue a short-lived JWT access token and set the refresh token only in an HttpOnly cookie. Send the access token as `Authorization: Bearer <token>` for authenticated routes. The frontend requests `/api/v1/csrf` before state-changing calls and sends Angular's `X-XSRF-TOKEN` header. Administrative operations require an account with the `ADMIN` role. Google Sign-In sends the browser-issued Google ID token to the API, where the token is verified before a local session is created.
 

@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +40,7 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
     }
     
     @Override
+    @Transactional
     public Product save(Product product) {
         ProductEntity entity = mapper.toEntity(product);
 
@@ -47,23 +49,27 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
     }
     
     @Override
+    @Transactional
     public void deleteById(ProductId id) {
         jpaRepository.deleteById(Objects.requireNonNull(id.value()));
     }
     
     @Override
+    @Transactional(readOnly = true)
     public Optional<Product> findById(ProductId id) {
         return jpaRepository.findById(Objects.requireNonNull(id.value()))
                 .map(mapper::toDomain);
     }
     
     @Override
+    @Transactional(readOnly = true)
     public boolean existsByName(String name) {
         return jpaRepository.existsByName(name);
     }
     
     @Override
-        public PagedResult<ProductReadModel> searchByCriteria(ProductSearchCriteria criteria) {
+    @Transactional(readOnly = true)
+    public PagedResult<ProductReadModel> searchByCriteria(ProductSearchCriteria criteria) {
         Sort sort = buildSort(criteria.sortBy(), criteria.sortDirection(), false);
         Pageable pageable = PageRequest.of(criteria.page(), criteria.size(), Objects.requireNonNull(sort));
 
@@ -90,7 +96,8 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
     }
 
     @Override
-        public PagedResult<AdminProductListReadModel> searchByAdminCriteria(AdminProductSearchCriteria criteria) {
+    @Transactional(readOnly = true)
+    public PagedResult<AdminProductListReadModel> searchByAdminCriteria(AdminProductSearchCriteria criteria) {
         Sort sort = buildSort(criteria.sortBy(), criteria.sortDirection(), true);
         Pageable pageable = PageRequest.of(criteria.page(), criteria.size(), Objects.requireNonNull(sort));
 

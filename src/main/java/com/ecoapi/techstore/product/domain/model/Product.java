@@ -23,6 +23,7 @@ public class Product {
     private Integer discountPercentage;
     private boolean featured;
     private boolean active;
+    private Long version;
     
     // Private constructor - use factory methods
     private Product(String name, Brand brand, Money price, int stock,
@@ -98,6 +99,16 @@ public class Product {
                                        Integer discountPercentage, boolean featured) {
         return new Product(id, name, brand, price, stock, description, category, imageUrl, active,
                 discountPercentage, featured);
+    }
+
+    public static Product reconstitute(ProductId id, String name, Brand brand, Money price,
+                                       int stock, String description, Category category,
+                                       ImageUrl imageUrl, boolean active,
+                                       Integer discountPercentage, boolean featured, Long version) {
+        Product product = new Product(id, name, brand, price, stock, description, category, imageUrl, active,
+                discountPercentage, featured);
+        product.version = version;
+        return product;
     }
     
     // Business logic methods
@@ -260,6 +271,10 @@ public class Product {
 
     public boolean isFeatured() {
         return featured;
+    }
+
+    public Long getVersion() {
+        return version;
     }
 
     // equals and hashcode

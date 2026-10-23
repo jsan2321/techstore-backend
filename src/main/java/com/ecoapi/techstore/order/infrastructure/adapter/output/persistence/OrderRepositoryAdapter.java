@@ -5,11 +5,14 @@ import com.ecoapi.techstore.order.application.port.out.OrderRepositoryPort;
 import com.ecoapi.techstore.order.application.service.dto.SearchOrderCriteria;
 import com.ecoapi.techstore.order.domain.model.Order;
 import com.ecoapi.techstore.order.domain.model.OrderId;
+import com.ecoapi.techstore.order.domain.model.OrderStatus;
 import com.ecoapi.techstore.order.infrastructure.adapter.output.persistence.entity.OrderEntity;
 import com.ecoapi.techstore.order.infrastructure.adapter.output.persistence.mapper.OrderPersistenceMapper;
 import com.ecoapi.techstore.order.infrastructure.adapter.output.persistence.repository.JpaOrderRepository;
 import com.ecoapi.techstore.order.infrastructure.adapter.output.persistence.specification.OrderSpecification;
 import com.ecoapi.techstore.common.domain.valueobjects.UserId;
+
+import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -89,5 +92,13 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
     @Override
     public boolean existsById(OrderId orderId) {
         return jpaOrderRepository.existsById(orderId.getValue());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> findPendingOrdersCreatedBefore(LocalDateTime cutoff) {
+        return jpaOrderRepository.findByStatusAndOrderDateBefore(OrderStatus.PENDING, cutoff).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 }
