@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 
@@ -107,6 +110,23 @@ public class JwtTokenProviderAdapter implements TokenProviderPort {
     }
     
     private Key key() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        byte[] keyBytes;
+        try {
+            byte[] decoded = Decoders.BASE64.decode(jwtSecret);
+            keyBytes = decoded.length >= 32 ? decoded : sha256(jwtSecret);
+        } catch (RuntimeException ex) {
+            byte[] rawBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+            keyBytes = rawBytes.length >= 32 ? rawBytes : sha256(jwtSecret);
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private byte[] sha256(String secret) {
+        try {
+            return MessageDigest.getInstance("SHA-256")
+                    .digest(secret.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 algorithm not available", e);
+        }
     }
 }

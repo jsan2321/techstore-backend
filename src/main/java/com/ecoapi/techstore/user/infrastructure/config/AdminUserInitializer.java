@@ -55,6 +55,12 @@ public class AdminUserInitializer {
 			if (userRepository.existsByEmail(email)) {
 				log.info("Admin user already exists for email {}. Ensuring admin roles...", adminEmail);
 				adminUser = userRepository.findByEmail(email).get();
+				if (!passwordEncoder.matches(adminPassword, adminUser.getPasswordHash())) {
+					adminUser.changePassword(passwordEncoder.encode(adminPassword));
+				}
+				if (!adminUser.isActive()) {
+					adminUser.reactivate();
+				}
 			} else {
 				String passwordHash = passwordEncoder.encode(adminPassword);
 				adminUser = User.register(adminFirstName, adminLastName, email, passwordHash);

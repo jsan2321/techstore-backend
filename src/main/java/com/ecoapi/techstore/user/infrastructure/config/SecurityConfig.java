@@ -106,6 +106,7 @@ public class SecurityConfig {
                 .csrfTokenRequestHandler(requestHandler)
                 .ignoringRequestMatchers(
                     "/api/v1/auth/login",
+                    "/api/v1/auth/google-login",
                     "/api/v1/admin/auth/login",
                     "/api/v1/auth/register",
                     "/api/v1/auth/resend-confirmation",
