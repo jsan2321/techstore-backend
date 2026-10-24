@@ -3,6 +3,10 @@ spring:
     name: techstore
   profiles:
     default: local
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:.env.local[.properties]
   servlet:
     multipart:
       max-file-size: 5MB
