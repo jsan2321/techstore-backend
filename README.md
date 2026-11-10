@@ -192,12 +192,20 @@ The API starts on **`http://localhost:8080`** with the prefix **`/api/v1`**.
 
 ## 🔑 Pre-Seeded Accounts
 
-When `ADMIN_ENABLED=true`, `AdminUserInitializer` automatically ensures the admin user exists:
+When the application boots, pre-verified accounts are seeded automatically for demonstration and evaluation:
 
 | Role | Email | Password | Allowed Access |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@goodshopping.local` | `Admin123!` | Full admin management + Swagger UI + customer shop |
-| **Customer**| *(Register via `/api/v1/auth/register`)* | *(Configured by user)* | Storefront browsing, cart, checkout |
+| **Admin** | `admin@goodshopping.local` | `Admin123!` | Full admin management (`/admin`) + Swagger UI + customer storefront |
+| **Customer** | `customer@techstore.local` | `Customer123!` | Storefront browsing, cart, pre-configured shipping address, and PayPal checkout |
+
+### 💳 PayPal Sandbox Credentials (Testing Checkout)
+
+When completing an order via PayPal Sandbox:
+
+| Account Type | Email | Password | Note |
+| :--- | :--- | :--- | :--- |
+| **Buyer (Personal)** | `jsan0506@email.com` | `GS7Fq+X+` | Use in the PayPal modal to approve the payment |
 
 ---
 
@@ -229,5 +237,4 @@ docker build -t techstore-backend .
 
 ## 🔒 Security Model
 
-* All private credentials (`.env`, JWT keys, AWS secrets) are excluded from version control via `.gitignore`.
 * Tokens in production should be rotated and supplied via platform secret managers (e.g. AWS Secrets Manager, Render Environment Secrets).

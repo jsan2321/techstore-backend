@@ -36,6 +36,12 @@ app:
     password: ${ADMIN_PASSWORD:}
     first-name: ${ADMIN_FIRST_NAME:Admin}
     last-name: ${ADMIN_LAST_NAME:User}
+  demo-customer:
+    enabled: ${DEMO_CUSTOMER_ENABLED:true}
+    email: ${DEMO_CUSTOMER_EMAIL:customer@techstore.local}
+    password: ${DEMO_CUSTOMER_PASSWORD:Customer123!}
+    first-name: ${DEMO_CUSTOMER_FIRST_NAME:Demo}
+    last-name: ${DEMO_CUSTOMER_LAST_NAME:Customer}
   seed:
     demo-catalog: ${SEED_DEMO_CATALOG:false}
   mail:
